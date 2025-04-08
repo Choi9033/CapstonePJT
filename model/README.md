@@ -1,8 +1,10 @@
 # Model
 
-실행 방법 : VSCode 기준 터미널 열고
-cd model
-python rhythm_analysis.py 기타연습.wav 백아-첫사랑.wav
-(연습곡, 원곡mr)
-하면 리듬정확도 확인 가능
-첫사랑2는 1과 같은 음원임. 왜 넣었냐면 리듬 정확도 확인 위함
+실행 방법 : target 폴더에 음원을 넣고
+generate_features.py 실행시
+user파일에 음원 변형본(fast,slow) 생김.
+그리고 csv 파일 생성됨.
+train_regressor.py를 실행시키려면 csv파일에 수동으로 score 컬럼을 넣고 점수를 매겨줘야함.
+일시적으로 원곡은 100, fast는 85, slow 70으로 매겼음.
+변동 예정 있음.
+현재까지는 정확도 72%
