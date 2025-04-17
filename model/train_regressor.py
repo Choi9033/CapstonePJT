@@ -1,5 +1,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import joblib
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error, r2_score
@@ -38,3 +39,5 @@ plt.title("🎯 예측 점수 vs 실제 점수")
 plt.grid(True)
 plt.tight_layout()
 plt.show()
+joblib.dump(model, "model.pkl")
+print("✅ 모델이 model.pkl 파일로 저장되었습니다.")
