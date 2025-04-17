@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>FastAPI + Firebase 저장</title>
+</head>
+<body>
+  <h2>메시지 저장하기</h2>
+  <form id="message-form">
+    <input type="text" id="name" placeholder="이름 입력" required>
+    <input type="text" id="message" placeholder="메시지 입력" required>
+    <button type="submit">저장</button>
+  </form>
+  <p id="status"></p>
+
+  <script>
+    const form = document.getElementById("message-form");
+    const status = document.getElementById("status");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const name = document.getElementById("name").value;
+      const message = document.getElementById("message").value;
+
+      const response = await fetch("http://localhost:8000/save", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ name, message })
+      });
+
+      const result = await response.json();
+      status.textContent = result.status === "success" ? "✅ 저장 완료" : "❌ 오류 발생";
+      form.reset();
+    });
+  </script>
+</body>
+</html>
