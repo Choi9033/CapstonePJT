@@ -1,9 +1,8 @@
-// Import the functions you need from the SDKs you need
+// src/firebase.js
 import { initializeApp } from 'firebase/app';
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 
-// Your web app's Firebase configuration
+// Firebase 설정
 const firebaseConfig = {
   apiKey: 'AIzaSyANohFRVbky9G2Synlb7RVhP6qraVw-4ds',
   authDomain: 'fir-d3b8e.firebaseapp.com',
@@ -13,5 +12,14 @@ const firebaseConfig = {
   appId: '1:1039855103377:web:90a767c599485df9363e30',
 };
 
-// Initialize Firebase
+// Firebase 초기화
 const app = initializeApp(firebaseConfig);
+
+// Authentication 객체 가져오기
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
+
+// 외부에서 쓸 수 있도록 export
+import { getFirestore } from 'firebase/firestore';
+const db = getFirestore(app);
+export { auth, provider, db };
