@@ -69,6 +69,32 @@ def generate_feedback(score):
         return "조금 더 박자에 집중해서 연습해보세요 ⏱️"
     else:
         return "리듬이 많이 흔들려요. 메트로놈과 함께 연습해보세요 🔁"
+    
+def extract_timing_errors(user_path, target_path, threshold=0.1):
+    y_user, sr_user = librosa.load(user_path)
+    y_target, sr_target = librosa.load(target_path)
+
+    user_onsets = librosa.onset.onset_detect(y=y_user, sr=sr_user, units='time')
+    target_onsets = librosa.onset.onset_detect(y=y_target, sr=sr_target, units='time')
+
+    min_len = min(len(user_onsets), len(target_onsets))
+    user_onsets = user_onsets[:min_len]
+    target_onsets = target_onsets[:min_len]
+
+    results = []
+    for i in range(min_len):
+        u = user_onsets[i]
+        t = target_onsets[i]
+        err = abs(u - t)
+        if err >= threshold:
+            results.append({
+                "index": i + 1,
+                "target_time": round(t, 2),
+                "user_time": round(u, 2),
+                "error": round(err, 3)
+            })
+    return results
+
 
 # === 실행 ===
 if __name__ == "__main__":
@@ -92,3 +118,12 @@ if __name__ == "__main__":
 
     print(f"\n🎯 예측 점수: {score}점")
     print(f"📢 피드백: {feedback}")
+
+    # 구간별 오차 출력
+    print("\n🧠 구간별 박자 오차가 큰 부분:")
+    timing_errors = extract_timing_errors(USER_RECORDING_PATH, TARGET_AUDIO_PATH)
+    if not timing_errors:
+        print("👍 전체적으로 정확하게 연주되었습니다!")
+    else:
+        for e in timing_errors:
+            print(f"{e['index']}번째 음표 | 예상: {e['target_time']}초 / 실제: {e['user_time']}초 → 오차: {e['error']}초")
