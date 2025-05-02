@@ -8,6 +8,7 @@ function JoinUs() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false); // 👁️ 비밀번호 보기 토글용
   const navigate = useNavigate();
 
   // Google 계정으로 가입
@@ -16,9 +17,8 @@ function JoinUs() {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
 
-      // Firestore에 사용자 정보 저장
       await setDoc(doc(db, 'users', user.uid), {
-        name: user.displayName || '이름없음',
+        name: user.displayName || name || '이름없음',
         email: user.email,
         provider: 'google',
         createdAt: new Date(),
@@ -41,7 +41,6 @@ function JoinUs() {
       );
       const user = userCredential.user;
 
-      // Firestore에 사용자 정보 저장
       await setDoc(doc(db, 'users', user.uid), {
         name,
         email,
@@ -101,14 +100,26 @@ function JoinUs() {
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-yellow-400 focus:outline-none"
             required
           />
-          <input
-            type="password"
-            placeholder="비밀번호"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-yellow-400 focus:outline-none"
-            required
-          />
+
+          {/* 👁️ 비밀번호 입력창 */}
+          <div className="relative">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              placeholder="비밀번호"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-yellow-400 focus:outline-none pr-10"
+              required
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700"
+              tabIndex={-1}
+            >
+              {showPassword ? '🙈' : '👁️'}
+            </button>
+          </div>
 
           <div className="flex items-center gap-2">
             <input type="checkbox" className="accent-yellow-400" required />

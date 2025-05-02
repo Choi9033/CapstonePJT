@@ -1,15 +1,18 @@
-// src/firebase.js
+// Import the functions you need from the SDKs you need
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider } from 'firebase/auth';
+import { getAnalytics } from 'firebase/analytics';
+import { getAuth, GoogleAuthProvider } from 'firebase/auth'; // ✅ 이 줄 추가
+import { getFirestore } from 'firebase/firestore';
 
 // Firebase 설정
 const firebaseConfig = {
-  apiKey: 'AIzaSyANohFRVbky9G2Synlb7RVhP6qraVw-4ds',
-  authDomain: 'fir-d3b8e.firebaseapp.com',
-  projectId: 'fir-d3b8e',
-  storageBucket: 'fir-d3b8e.firebasestorage.app',
-  messagingSenderId: '1039855103377',
-  appId: '1:1039855103377:web:90a767c599485df9363e30',
+  apiKey: 'AIzaSyCRgMoP3VwVQ7-KXM-ctmQE7zPg8OYdZME',
+  authDomain: 'my-first-firebase-2025-6287e.firebaseapp.com',
+  projectId: 'my-first-firebase-2025-6287e',
+  storageBucket: 'my-first-firebase-2025-6287e.firebasestorage.app',
+  messagingSenderId: '282714407847',
+  appId: '1:282714407847:web:3312c03385c2e316042c82',
+  measurementId: 'G-EMXERDWKHX',
 };
 
 // Firebase 초기화
@@ -19,7 +22,8 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
-// 외부에서 쓸 수 있도록 export
-import { getFirestore } from 'firebase/firestore';
+// Firestore 객체 가져오기
 const db = getFirestore(app);
+
+// 외부에서 쓸 수 있도록 export
 export { auth, provider, db };

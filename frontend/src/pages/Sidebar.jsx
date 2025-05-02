@@ -1,19 +1,53 @@
-import React from 'react';
+import { NavLink } from 'react-router-dom';
 
 const Sidebar = () => {
+  const baseClass = 'px-3 py-2 rounded-md hover:bg-[#2c2c3a] transition-colors';
+  const activeClass = 'text-yellow-300 font-bold bg-[#2c2c3a]';
+
   return (
-    <div className="w-64 min-h-screen bg-gray-900 text-white p-6">
-      <h2 className="text-2xl font-bold mb-8">🎸 Guitara</h2>
-      <nav>
-        <ul className="space-y-4 text-lg">
-          <li className="hover:text-yellow-400 cursor-pointer">🏠 Home</li>
-          <li className="hover:text-yellow-400 cursor-pointer">🎵 Metronome</li>
-          <li className="hover:text-yellow-400 cursor-pointer">🎸 Tuner</li>
-          <li className="hover:text-yellow-400 cursor-pointer">
-            🥁 Rhythm Trainer
-          </li>
-          <li className="hover:text-yellow-400 cursor-pointer">👤 My Page</li>
-        </ul>
+    <div className="w-60 min-h-screen bg-[#1f1f2e] text-white p-6">
+      <h1 className="text-xl font-bold mb-6">🎸 Guitara</h1>
+      <nav className="flex flex-col gap-2 text-sm">
+        <NavLink
+          to="/"
+          className={({ isActive }) =>
+            `${baseClass} ${isActive ? activeClass : 'text-white'}`
+          }
+        >
+          🏠 Home
+        </NavLink>
+        <NavLink
+          to="/metronome"
+          className={({ isActive }) =>
+            `${baseClass} ${isActive ? activeClass : 'text-white'}`
+          }
+        >
+          🎵 Metronome
+        </NavLink>
+        <NavLink
+          to="/tuner"
+          className={({ isActive }) =>
+            `${baseClass} ${isActive ? activeClass : 'text-white'}`
+          }
+        >
+          🎸 Tuner
+        </NavLink>
+        <NavLink
+          to="/rhythm-trainer"
+          className={({ isActive }) =>
+            `${baseClass} ${isActive ? activeClass : 'text-white'}`
+          }
+        >
+          🥁 Rhythm Trainer
+        </NavLink>
+        <NavLink
+          to="/mypage"
+          className={({ isActive }) =>
+            `${baseClass} ${isActive ? activeClass : 'text-white'}`
+          }
+        >
+          👤 My Page
+        </NavLink>
       </nav>
     </div>
   );

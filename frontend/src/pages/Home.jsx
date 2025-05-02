@@ -1,4 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { auth, db } from '../firebase';
+import { signOut } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 import Sidebar from './Sidebar';
 import RoutineCard from './RoutineCard';
 import Metronome from './Metronome';
@@ -6,6 +10,24 @@ import Tuner from './Tuner';
 import AccuracyChart from './AccuracyChart';
 
 const Home = () => {
+  const [userName, setUserName] = useState('');
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchUserName = async () => {
+      const user = auth.currentUser;
+      if (user) {
+        const docRef = doc(db, 'users', user.uid);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setUserName(docSnap.data().name);
+        }
+      }
+    };
+
+    fetchUserName();
+  }, []);
+
   const handleChangeRoutine = () => {
     alert('루틴 변경 기능은 추후 업데이트 예정입니다.');
   };
@@ -14,9 +36,13 @@ const Home = () => {
     alert('녹음 업로드 기능은 추후 업데이트 예정입니다.');
   };
 
-  const handleLogout = () => {
-    alert('로그아웃 되었습니다.');
-    // 실제 로그아웃 로직은 나중에 추가
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      navigate('/login');
+    } catch (error) {
+      alert('로그아웃 중 오류가 발생했습니다.');
+    }
   };
 
   return (
@@ -26,7 +52,7 @@ const Home = () => {
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-3xl md:text-4xl font-bold text-yellow-500 mb-1">
-              Hello, Yuna <span>🎸</span>
+              Hello, {userName || '뮤지션'} <span>🎸</span>
             </h1>
             <p className="text-gray-500">오늘의 연습을 시작해볼까요?</p>
           </div>
