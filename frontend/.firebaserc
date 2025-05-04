@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "fir-d3b8e"
-  }
+    "default": "my-first-firebase-2025-458711",
+    "my-first-firebase-2025-458711": "my-first-firebase-2025-458711"
+  },
+  "targets": {},
+  "etags": {}
 }

@@ -28,7 +28,7 @@ const Login = () => {
         { merge: true }
       ); // 기존 데이터 있으면 덮어쓰지 않음
 
-      navigate('/');
+      navigate('/home');
     } catch (error) {
       alert('Google 로그인 실패: ' + error.message);
     }
@@ -38,7 +38,7 @@ const Login = () => {
     e.preventDefault();
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      navigate('/');
+      navigate('/home');
     } catch (error) {
       alert('로그인 실패: ' + error.message);
     }

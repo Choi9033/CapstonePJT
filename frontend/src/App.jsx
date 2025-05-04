@@ -13,9 +13,10 @@ function App() {
     <Router>
       <Routes>
         {/* 홈 */}
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Login />} />
 
         {/* 로그인 & 회원가입 */}
+	<Route path="/home" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/join" element={<JoinUs />} />
 

@@ -6,13 +6,13 @@ import { getFirestore } from 'firebase/firestore';
 
 // Firebase 설정
 const firebaseConfig = {
-  apiKey: 'AIzaSyCRgMoP3VwVQ7-KXM-ctmQE7zPg8OYdZME',
-  authDomain: 'my-first-firebase-2025-6287e.firebaseapp.com',
-  projectId: 'my-first-firebase-2025-6287e',
-  storageBucket: 'my-first-firebase-2025-6287e.firebasestorage.app',
-  messagingSenderId: '282714407847',
-  appId: '1:282714407847:web:3312c03385c2e316042c82',
-  measurementId: 'G-EMXERDWKHX',
+  apiKey: "AIzaSyBiY5vRfvS8fVuDKuwB_kpLm6R8SRv34Fw",
+  authDomain: "my-first-firebase-2025-458711.firebaseapp.com",
+  projectId: "my-first-firebase-2025-458711",
+  storageBucket: "my-first-firebase-2025-458711.firebasestorage.app",
+  messagingSenderId: "533493952547",
+  appId: "1:533493952547:web:52b872530a858565fdc196",
+  measurementId: "G-YF12K1B79R"
 };
 
 // Firebase 초기화
