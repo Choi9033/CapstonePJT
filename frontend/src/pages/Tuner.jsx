@@ -1,77 +1,114 @@
-import React, { useEffect, useRef, useState } from 'react';
-import PitchFinder from 'pitchfinder';
+import React, { useRef, useState } from 'react';
 
 const Tuner = () => {
-  const [note, setNote] = useState('');
-  const [frequency, setFrequency] = useState(null);
+  const [note, setNote] = useState('-');
+  const [frequency, setFrequency] = useState('-');
+  const [message, setMessage] = useState('');
   const [isListening, setIsListening] = useState(false);
 
   const audioContextRef = useRef(null);
   const analyserRef = useRef(null);
-  const bufferRef = useRef(new Float32Array(2048));
-  const detector = useRef(PitchFinder.YIN());
-  const intervalRef = useRef(null);
+  const dataArrayRef = useRef(null);
+  const intervalIdRef = useRef(null);
+  const lastPitchRef = useRef(null);
   const streamRef = useRef(null);
 
-  const startTuner = async () => {
+  const API_BASE_URL = 'https://fastapi-app-533493952547.us-central1.run.app'; // 변경 필요
+
+  const startTuning = async () => {
     try {
-      audioContextRef.current = new (window.AudioContext ||
-        window.webkitAudioContext)();
+      audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
 
-      const source = audioContextRef.current.createMediaStreamSource(stream);
+      const microphone = audioContextRef.current.createMediaStreamSource(stream);
       analyserRef.current = audioContextRef.current.createAnalyser();
-      source.connect(analyserRef.current);
+      analyserRef.current.fftSize = 2048;
+      microphone.connect(analyserRef.current);
 
-      intervalRef.current = setInterval(() => {
-        analyserRef.current.getFloatTimeDomainData(bufferRef.current);
-        const pitch = detector.current(bufferRef.current);
-        if (pitch) {
-          setFrequency(pitch.toFixed(2));
-          setNote(getNote(pitch));
-        }
-      }, 200);
+      const bufferLength = analyserRef.current.fftSize;
+      dataArrayRef.current = new Float32Array(bufferLength);
+
+      intervalIdRef.current = setInterval(detectPitch, 200);
     } catch (err) {
-      console.error('🎙️ 마이크 접근 실패:', err);
+      console.error('🎤 마이크 접근 실패:', err);
+      setMessage('마이크 접근 실패');
     }
   };
 
-  const stopTuner = () => {
-    if (intervalRef.current) clearInterval(intervalRef.current);
+  const stopTuning = () => {
+    if (intervalIdRef.current) clearInterval(intervalIdRef.current);
     if (audioContextRef.current) audioContextRef.current.close();
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
-    }
-    setFrequency(null);
-    setNote('');
+    if (streamRef.current) streamRef.current.getTracks().forEach((track) => track.stop());
+    setIsListening(false);
+    setMessage('튜너 중지됨');
+    setFrequency('-');
+    setNote('-');
   };
 
-  useEffect(() => {
-    if (isListening) {
-      startTuner();
-    } else {
-      stopTuner();
+  const detectPitch = async () => {
+    if (!analyserRef.current || !dataArrayRef.current) return;
+    analyserRef.current.getFloatTimeDomainData(dataArrayRef.current);
+
+    const pitch = autoCorrelate(dataArrayRef.current, audioContextRef.current.sampleRate);
+    if (pitch === -1 || pitch > 10000) return;
+
+    setFrequency(pitch.toFixed(2));
+    setNote(getNote(pitch));
+
+    const now = Date.now();
+    if (
+      lastPitchRef.current === null ||
+      Math.abs(pitch - lastPitchRef.current) > 0.5
+    ) {
+      lastPitchRef.current = pitch;
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/analyze_pitch`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ frequency: pitch }),
+        });
+        const data = await res.json();
+        setMessage(data.message);
+      } catch (err) {
+        console.error('🚨 서버 호출 실패:', err);
+        setMessage('API 호출 실패');
+      }
+    }
+  };
+
+  const autoCorrelate = (buffer, sampleRate) => {
+    const SIZE = buffer.length;
+    const MAX_SAMPLES = Math.floor(SIZE / 2);
+    let bestOffset = -1;
+    let bestCorrelation = 0;
+    let rms = 0;
+
+    for (let i = 0; i < SIZE; i++) rms += buffer[i] * buffer[i];
+    rms = Math.sqrt(rms / SIZE);
+    if (rms < 0.01) return -1;
+
+    for (let offset = 10; offset < MAX_SAMPLES; offset++) {
+      let correlation = 0;
+      for (let i = 0; i < MAX_SAMPLES; i++) {
+        correlation += Math.abs(buffer[i] - buffer[i + offset]);
+      }
+
+      correlation = 1 - correlation / MAX_SAMPLES;
+      if (correlation > bestCorrelation) {
+        bestCorrelation = correlation;
+        bestOffset = offset;
+      }
     }
 
-    return () => stopTuner();
-  }, [isListening]);
+    return bestCorrelation > 0.7 && bestOffset > 10
+      ? sampleRate / bestOffset
+      : -1;
+  };
 
   const getNote = (frequency) => {
-    const noteNames = [
-      'C',
-      'C#',
-      'D',
-      'D#',
-      'E',
-      'F',
-      'F#',
-      'G',
-      'G#',
-      'A',
-      'A#',
-      'B',
-    ];
+    const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
     const noteNumber = 12 * (Math.log(frequency / 440) / Math.log(2));
     const index = Math.round(noteNumber) + 69;
     return noteNames[index % 12];
@@ -80,15 +117,17 @@ const Tuner = () => {
   return (
     <div className="bg-white rounded-lg shadow p-6">
       <h2 className="text-lg font-semibold mb-4">🎸 튜너</h2>
-      <p className="text-sm text-gray-600">
-        현재 음: <strong>{note || '-'}</strong>
-      </p>
-      <p className="text-sm text-gray-600">
-        주파수: <strong>{frequency || '-'} Hz</strong>
-      </p>
-
+      <p className="text-sm text-gray-600">현재 음: <strong>{note}</strong></p>
+      <p className="text-sm text-gray-600">주파수: <strong>{frequency} Hz</strong></p>
+      <p className="text-sm text-blue-600 whitespace-pre-wrap mt-2">{message}</p>
       <button
-        onClick={() => setIsListening((prev) => !prev)}
+        onClick={() => {
+          if (isListening) stopTuning();
+          else {
+            setIsListening(true);
+            startTuning();
+          }
+        }}
         className={`mt-4 w-full py-2 rounded-md font-semibold transition ${
           isListening ? 'bg-red-400 text-white' : 'bg-yellow-400 text-white'
         } hover:opacity-90`}
