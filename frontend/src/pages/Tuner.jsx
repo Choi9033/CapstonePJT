@@ -4,44 +4,58 @@ import PitchFinder from 'pitchfinder';
 const Tuner = () => {
   const [note, setNote] = useState('');
   const [frequency, setFrequency] = useState(null);
+  const [isListening, setIsListening] = useState(false);
+
   const audioContextRef = useRef(null);
   const analyserRef = useRef(null);
   const bufferRef = useRef(new Float32Array(2048));
-  const detector = useRef(PitchFinder.YIN()); // 👉 추후 ML 모델로 교체 예정
+  const detector = useRef(PitchFinder.YIN());
+  const intervalRef = useRef(null);
+  const streamRef = useRef(null);
+
+  const startTuner = async () => {
+    try {
+      audioContextRef.current = new (window.AudioContext ||
+        window.webkitAudioContext)();
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+
+      const source = audioContextRef.current.createMediaStreamSource(stream);
+      analyserRef.current = audioContextRef.current.createAnalyser();
+      source.connect(analyserRef.current);
+
+      intervalRef.current = setInterval(() => {
+        analyserRef.current.getFloatTimeDomainData(bufferRef.current);
+        const pitch = detector.current(bufferRef.current);
+        if (pitch) {
+          setFrequency(pitch.toFixed(2));
+          setNote(getNote(pitch));
+        }
+      }, 200);
+    } catch (err) {
+      console.error('🎙️ 마이크 접근 실패:', err);
+    }
+  };
+
+  const stopTuner = () => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    if (audioContextRef.current) audioContextRef.current.close();
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+    }
+    setFrequency(null);
+    setNote('');
+  };
 
   useEffect(() => {
-    const startTuner = async () => {
-      try {
-        audioContextRef.current = new (window.AudioContext ||
-          window.webkitAudioContext)();
-        const stream = await navigator.mediaDevices.getUserMedia({
-          audio: true,
-        });
-        const source = audioContextRef.current.createMediaStreamSource(stream);
-        analyserRef.current = audioContextRef.current.createAnalyser();
-        source.connect(analyserRef.current);
+    if (isListening) {
+      startTuner();
+    } else {
+      stopTuner();
+    }
 
-        const detectPitch = () => {
-          analyserRef.current.getFloatTimeDomainData(bufferRef.current);
-
-          // 👉 현재는 YIN 알고리즘으로 추정. 추후 ML 모델로 변경 예정
-          const pitch = detector.current(bufferRef.current);
-          if (pitch) {
-            setFrequency(pitch.toFixed(2));
-            setNote(getNote(pitch));
-          }
-
-          requestAnimationFrame(detectPitch);
-        };
-
-        detectPitch();
-      } catch (err) {
-        console.error('🎙️ 마이크 접근 실패:', err);
-      }
-    };
-
-    startTuner();
-  }, []);
+    return () => stopTuner();
+  }, [isListening]);
 
   const getNote = (frequency) => {
     const noteNames = [
@@ -72,9 +86,15 @@ const Tuner = () => {
       <p className="text-sm text-gray-600">
         주파수: <strong>{frequency || '-'} Hz</strong>
       </p>
-      <p className="text-xs text-gray-400 mt-2">
-        * 머신러닝 기반 분석 기능은 추후 적용 예정
-      </p>
+
+      <button
+        onClick={() => setIsListening((prev) => !prev)}
+        className={`mt-4 w-full py-2 rounded-md font-semibold transition ${
+          isListening ? 'bg-red-400 text-white' : 'bg-yellow-400 text-white'
+        } hover:opacity-90`}
+      >
+        {isListening ? '정지' : '듣기 시작'}
+      </button>
     </div>
   );
 };
