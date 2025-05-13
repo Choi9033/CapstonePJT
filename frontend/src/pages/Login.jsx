@@ -26,19 +26,20 @@ const Login = () => {
           lastLogin: new Date(),
         },
         { merge: true }
-      ); // 기존 데이터 있으면 덮어쓰지 않음
+      );
 
-      navigate('/home');
+      navigate('/'); // ✅ 수정됨
     } catch (error) {
       alert('Google 로그인 실패: ' + error.message);
     }
   };
 
+  // ✉️ 이메일 로그인
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      navigate('/home');
+      navigate('/'); // ✅ 수정됨
     } catch (error) {
       alert('로그인 실패: ' + error.message);
     }
