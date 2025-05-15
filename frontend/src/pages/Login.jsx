@@ -61,7 +61,7 @@ const Login = () => {
           onClick={handleGoogleLogin}
           className="flex items-center justify-center gap-2 bg-black text-white py-2 rounded-md font-semibold mb-6 hover:bg-gray-800 w-full"
         >
-          <img src="/google-icon.svg" alt="Google" className="w-5 h-5" />
+          <img src="/google.svg" alt="Google" className="w-5 h-5" />
           Google 계정으로 로그인
         </button>
 
