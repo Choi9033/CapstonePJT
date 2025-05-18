@@ -104,8 +104,8 @@ const Home = () => {
           <Tuner />
         </div>
 
-        {/* 정확도 차트 카드 */}
-        <div className="p-6 rounded-2xl border border-gray-200 bg-white shadow-md transition-transform duration-300 ease-in-out transform hover:scale-[1.015] hover:shadow-lg">
+        {/* 정확도 차트 카드 - 두 칸 전체로 넓게 */}
+        <div className="md:col-span-2 p-6 rounded-2xl border border-gray-200 bg-white shadow-md transition-transform duration-300 ease-in-out transform hover:scale-[1.015] hover:shadow-lg">
           <AccuracyChart />
         </div>
       </div>
