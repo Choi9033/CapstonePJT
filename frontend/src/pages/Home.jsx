@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, db } from '../firebase';
 import { signOut } from 'firebase/auth';
+import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import Metronome from './Metronome';
 import Tuner from './Tuner';
@@ -12,18 +13,22 @@ const Home = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchUserName = async () => {
-      const user = auth.currentUser;
-      if (user) {
+  const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      try {
         const docRef = doc(db, 'users', user.uid);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           setUserName(docSnap.data().name);
         }
+      } catch (error) {
+        console.error('Firestore 접근 오류:', error);
       }
-    };
-    fetchUserName();
-  }, []);
+    }
+  });
+
+  return () => unsubscribe();
+}, []);
 
   const handleChangeRoutine = () => {
     alert('루틴 변경 기능은 추후 업데이트 예정입니다.');

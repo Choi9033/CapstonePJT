@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 
 const Tuner = () => {
   const [note, setNote] = useState('-');
@@ -13,16 +13,28 @@ const Tuner = () => {
   const lastPitchRef = useRef(null);
   const streamRef = useRef(null);
 
-  const API_BASE_URL = 'https://fastapi-app-533493952547.us-central1.run.app'; // 변경 필요
+  const API_BASE_URL = 'https://fastapi-app-533493952547.us-central1.run.app';
+
+  // 💡 언마운트 시 클린업
+  useEffect(() => {
+    return () => {
+      stopTuning();
+    };
+  }, []);
 
   const startTuning = async () => {
     try {
-      audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+        return; // 이미 켜져 있으면 중복 방지
+      }
+
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      audioContextRef.current = audioCtx;
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
 
-      const microphone = audioContextRef.current.createMediaStreamSource(stream);
-      analyserRef.current = audioContextRef.current.createAnalyser();
+      const microphone = audioCtx.createMediaStreamSource(stream);
+      analyserRef.current = audioCtx.createAnalyser();
       analyserRef.current.fftSize = 2048;
       microphone.connect(analyserRef.current);
 
@@ -30,16 +42,26 @@ const Tuner = () => {
       dataArrayRef.current = new Float32Array(bufferLength);
 
       intervalIdRef.current = setInterval(detectPitch, 200);
+      setIsListening(true); // ✅ 성공했을 때만 상태 true
+      setMessage('듣기 시작!');
     } catch (err) {
       console.error('🎤 마이크 접근 실패:', err);
       setMessage('마이크 접근 실패');
+      setIsListening(false);
     }
   };
 
   const stopTuning = () => {
     if (intervalIdRef.current) clearInterval(intervalIdRef.current);
-    if (audioContextRef.current) audioContextRef.current.close();
-    if (streamRef.current) streamRef.current.getTracks().forEach((track) => track.stop());
+    if (audioContextRef.current) {
+      audioContextRef.current.close();
+      audioContextRef.current = null;
+    }
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
+
     setIsListening(false);
     setMessage('튜너 중지됨');
     setFrequency('-');
@@ -47,16 +69,15 @@ const Tuner = () => {
   };
 
   const detectPitch = async () => {
-    if (!analyserRef.current || !dataArrayRef.current) return;
-    analyserRef.current.getFloatTimeDomainData(dataArrayRef.current);
+    if (!analyserRef.current || !dataArrayRef.current || !audioContextRef.current) return;
 
+    analyserRef.current.getFloatTimeDomainData(dataArrayRef.current);
     const pitch = autoCorrelate(dataArrayRef.current, audioContextRef.current.sampleRate);
     if (pitch === -1 || pitch > 10000) return;
 
     setFrequency(pitch.toFixed(2));
     setNote(getNote(pitch));
 
-    const now = Date.now();
     if (
       lastPitchRef.current === null ||
       Math.abs(pitch - lastPitchRef.current) > 0.5
@@ -123,10 +144,7 @@ const Tuner = () => {
       <button
         onClick={() => {
           if (isListening) stopTuning();
-          else {
-            setIsListening(true);
-            startTuning();
-          }
+          else startTuning();
         }}
         className={`mt-4 w-full py-2 rounded-md font-semibold transition ${
           isListening ? 'bg-red-400 text-white' : 'bg-yellow-400 text-white'
