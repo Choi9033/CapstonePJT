@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from "react";
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
-import { db, auth } from "../firebase";
-import { onAuthStateChanged } from "firebase/auth";
-import { Bar } from "react-chartjs-2";
+import React, { useEffect, useState } from 'react';
+import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+import { db, auth } from '../firebase';
+import { onAuthStateChanged } from 'firebase/auth';
+import { Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
   BarElement,
   Tooltip,
-} from "chart.js";
+} from 'chart.js';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip);
 
@@ -38,8 +38,8 @@ const MyPage = () => {
       if (!userId) return;
       try {
         const q = query(
-          collection(db, "users", userId, "sessions"),
-          orderBy("timestamp", "desc")
+          collection(db, 'users', userId, 'sessions'),
+          orderBy('timestamp', 'desc')
         );
         const snapshot = await getDocs(q);
         const data = snapshot.docs.map((doc) => ({
@@ -48,7 +48,7 @@ const MyPage = () => {
         }));
         setSessions(data);
       } catch (err) {
-        console.error("❌ Firestore 불러오기 실패:", err);
+        console.error('❌ Firestore 불러오기 실패:', err);
       }
     };
 
@@ -57,16 +57,18 @@ const MyPage = () => {
 
   // 📊 평균 계산 함수
   const avg = (arr) =>
-    arr.length === 0 ? 0 : (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(2);
+    arr.length === 0
+      ? 0
+      : (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(2);
 
   // 📊 차트 데이터 구성
   const scoreChart = {
     labels: sessions.map((s, i) => `#${sessions.length - i} - ${s.song}`),
     datasets: [
       {
-        label: "점수",
+        label: '점수',
         data: sessions.map((s) => s.score),
-        backgroundColor: "rgba(54, 162, 235, 0.6)",
+        backgroundColor: 'rgba(54, 162, 235, 0.6)',
       },
     ],
   };
@@ -87,7 +89,7 @@ const MyPage = () => {
 
   return (
     <div className="p-10 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">👤 마이페이지</h1>
+      <h1 className="text-2xl font-bold mb-6">📊 My Stats</h1>
 
       {sessions.length === 0 ? (
         <p>📭 아직 분석 기록이 없습니다.</p>
@@ -103,8 +105,12 @@ const MyPage = () => {
             <ul className="list-disc list-inside text-sm text-gray-700">
               <li>총 분석 횟수: {sessions.length}회</li>
               <li>평균 점수: {avg(sessions.map((s) => s.score))}</li>
-              <li>평균 BPM 차이: {avg(sessions.map((s) => s.bpm_diff || 0))}</li>
-              <li>평균 연주 시간: {avg(sessions.map((s) => s.duration || 0))}초</li>
+              <li>
+                평균 BPM 차이: {avg(sessions.map((s) => s.bpm_diff || 0))}
+              </li>
+              <li>
+                평균 연주 시간: {avg(sessions.map((s) => s.duration || 0))}초
+              </li>
             </ul>
           </section>
 
@@ -113,7 +119,7 @@ const MyPage = () => {
             <ul className="text-sm text-gray-600 list-disc list-inside">
               {sessions.slice(0, 3).map((s) => (
                 <li key={s.id}>
-                  [{new Date(s.timestamp?.seconds * 1000).toLocaleString()}]{" "}
+                  [{new Date(s.timestamp?.seconds * 1000).toLocaleString()}]{' '}
                   <strong>{s.song}</strong> – {s.feedback}
                 </li>
               ))}

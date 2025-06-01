@@ -1,18 +1,78 @@
 import React from 'react';
 
-const RoutineCard = () => {
+const RoutineCard = ({ onComplete }) => {
+  const weeklyRoutine = [
+    {
+      요일: '일요일',
+      코드: 'A – E – F#m – D',
+      스트로크: 'Downup–Down–Up–Up',
+      템포: 87,
+    },
+    {
+      요일: '월요일',
+      코드: 'G – D – Em – C',
+      스트로크: 'Down–Downup–Up–Up–Down',
+      템포: 90,
+    },
+    {
+      요일: '화요일',
+      코드: 'Am – C – Dm – G',
+      스트로크: 'Down–Down–Up–Up–Down',
+      템포: 80,
+    },
+    {
+      요일: '수요일',
+      코드: 'E – A – B7',
+      스트로크: 'Down–Up–Down–Up',
+      템포: 85,
+    },
+    {
+      요일: '목요일',
+      코드: 'C – G – Am – F',
+      스트로크: 'Down–Down–Downup–Up',
+      템포: 88,
+    },
+    {
+      요일: '금요일',
+      코드: 'D – Bm – G – A',
+      스트로크: 'Down–Up–Up–Down–Down',
+      템포: 92,
+    },
+    {
+      요일: '토요일',
+      코드: 'Em – C – G – D',
+      스트로크: 'Down–Down–Down–Up',
+      템포: 86,
+    },
+  ];
+
+  const todayIndex = new Date().getDay();
+  const routine = weeklyRoutine[todayIndex];
+
   return (
-    <div className="bg-white p-6 rounded-lg shadow">
-      <h2 className="font-semibold text-lg mb-2 text-yellow-600">
-        🎵 Today’s Routine
+    <div>
+      <h2 className="text-lg font-bold text-yellow-600 mb-2">
+        🎵 오늘의 연습 루틴
       </h2>
-      <ul className="text-gray-700 text-sm list-disc list-inside space-y-1">
-        <li>Chords: G – D – Em – C</li>
-        <li>Strumming Pattern: Down–Downup–Up–Up–Down</li>
-        <li>Target Tempo: 90 BPM</li>
+      <ul className="text-sm text-gray-800 space-y-1">
+        <li>
+          <strong>요일:</strong> {routine.요일}
+        </li>
+        <li>
+          <strong>코드 진행:</strong> {routine.코드}
+        </li>
+        <li>
+          <strong>스트로크 패턴:</strong> {routine.스트로크}
+        </li>
+        <li>
+          <strong>목표 템포:</strong> {routine.템포} BPM
+        </li>
       </ul>
-      <button className="mt-4 bg-yellow-400 hover:bg-yellow-500 text-white px-4 py-2 rounded text-sm">
-        Start Practice
+      <button
+        onClick={onComplete}
+        className="mt-4 bg-yellow-400 text-white py-1 px-4 rounded hover:bg-yellow-500 transition"
+      >
+        연습 완료
       </button>
     </div>
   );

@@ -22,6 +22,7 @@ function JoinUs() {
         email: user.email,
         provider: 'google',
         createdAt: new Date(),
+        completedDays: [],
       });
 
       navigate('/');
@@ -46,6 +47,7 @@ function JoinUs() {
         email,
         provider: 'email',
         createdAt: new Date(),
+        completedDays: [], // ✅ 자동 초기화
       });
 
       navigate('/');

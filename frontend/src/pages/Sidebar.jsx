@@ -50,7 +50,7 @@ const Sidebar = () => {
             `${baseClass} ${isActive ? activeClass : 'text-white'}`
           }
         >
-          👤 My Page
+          📊 My Stats
         </NavLink>
       </nav>
     </div>
