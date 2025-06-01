@@ -16,6 +16,7 @@ const Sidebar = () => {
         >
           🏠 Home
         </NavLink>
+
         <NavLink
           to="/metronome"
           className={({ isActive }) =>
@@ -24,6 +25,7 @@ const Sidebar = () => {
         >
           🎵 Metronome
         </NavLink>
+
         <NavLink
           to="/tuner"
           className={({ isActive }) =>
@@ -32,6 +34,7 @@ const Sidebar = () => {
         >
           🎸 Tuner
         </NavLink>
+
         <NavLink
           to="/rhythm-trainer"
           className={({ isActive }) =>
@@ -40,6 +43,7 @@ const Sidebar = () => {
         >
           🥁 Rhythm Trainer
         </NavLink>
+
         <NavLink
           to="/mypage"
           className={({ isActive }) =>
