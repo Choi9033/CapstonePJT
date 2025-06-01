@@ -8,6 +8,8 @@ import Tuner from './Tuner';
 import AccuracyChart from './AccuracyChart';
 import RoutineCard from './RoutineCard';
 import ProgressCard from './ProgressCard';
+import PracticeTrackPlayer from './PracticeTrackPlayer';
+
 
 const Home = () => {
   const [userName, setUserName] = useState('');
@@ -102,6 +104,11 @@ const Home = () => {
           className="cursor-pointer p-6 rounded-2xl border border-gray-200 bg-white shadow-md transition-transform duration-300 ease-in-out transform hover:scale-[1.015] hover:shadow-lg"
         >
           <AccuracyChart />
+        </div>
+        
+        {/* MR 연주 카드 */}
+        <div className="p-6 rounded-2xl border border-gray-200 bg-white shadow-md transition-transform duration-300 ease-in-out transform hover:scale-[1.015] hover:shadow-lg">
+          <PracticeTrackPlayer />
         </div>
       </div>
     </main>
