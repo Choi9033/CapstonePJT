@@ -1,10 +1,12 @@
 import React, { useRef, useState, useEffect } from 'react';
+import { useMicSensitivity } from '../contexts/MicSensitivityContext';
 
 const Tuner = () => {
   const [note, setNote] = useState('-');
   const [frequency, setFrequency] = useState('-');
   const [message, setMessage] = useState('');
   const [isListening, setIsListening] = useState(false);
+  const { sensitivity } = useMicSensitivity();
 
   const audioContextRef = useRef(null);
   const analyserRef = useRef(null);
@@ -15,7 +17,6 @@ const Tuner = () => {
 
   const API_BASE_URL = 'https://fastapi-app-533493952547.us-central1.run.app';
 
-  // 💡 언마운트 시 클린업
   useEffect(() => {
     return () => {
       stopTuning();
@@ -24,9 +25,7 @@ const Tuner = () => {
 
   const startTuning = async () => {
     try {
-      if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
-        return; // 이미 켜져 있으면 중복 방지
-      }
+      if (audioContextRef.current && audioContextRef.current.state !== 'closed') return;
 
       const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       audioContextRef.current = audioCtx;
@@ -34,15 +33,20 @@ const Tuner = () => {
       streamRef.current = stream;
 
       const microphone = audioCtx.createMediaStreamSource(stream);
+      const gainNode = audioCtx.createGain();
+      gainNode.gain.value = sensitivity;
+
       analyserRef.current = audioCtx.createAnalyser();
       analyserRef.current.fftSize = 2048;
-      microphone.connect(analyserRef.current);
+
+      microphone.connect(gainNode);
+      gainNode.connect(analyserRef.current);
 
       const bufferLength = analyserRef.current.fftSize;
       dataArrayRef.current = new Float32Array(bufferLength);
 
       intervalIdRef.current = setInterval(detectPitch, 200);
-      setIsListening(true); // ✅ 성공했을 때만 상태 true
+      setIsListening(true);
       setMessage('듣기 시작!');
     } catch (err) {
       console.error('🎤 마이크 접근 실패:', err);
