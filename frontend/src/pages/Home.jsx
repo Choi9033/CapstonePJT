@@ -5,7 +5,6 @@ import { signOut, onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import Metronome from './Metronome';
 import Tuner from './Tuner';
-import AccuracyChart from './AccuracyChart';
 import RoutineCard from './RoutineCard';
 import { updateDoc } from 'firebase/firestore';
 import ProgressCard from './ProgressCard';
@@ -40,13 +39,7 @@ const Home = () => {
     return () => unsubscribe();
   }, []);
 
-  const handleChangeRoutine = () => {
-    alert('루틴 변경 기능은 추후 업데이트 예정입니다.');
-  };
-
-  const handleUploadRecording = () => {
-    alert('녹음 업로드 기능은 추후 업데이트 예정입니다.');
-  };
+ 
 
   const markTodayComplete = async () => {
     const today = new Date().getDay(); // 0 ~ 6
@@ -107,7 +100,7 @@ const Home = () => {
 
         {/* 연습 진행률 카드 */}
         <div className="cursor-pointer p-6 rounded-2xl border border-gray-200 bg-white shadow-md transition-transform duration-300 ease-in-out transform hover:scale-[1.015] hover:shadow-lg">
-          <ProgressCard />
+          <ProgressCard completedDays={completedDays} />
         </div>
 
         {/* 메트로놈 카드 */}
@@ -126,13 +119,6 @@ const Home = () => {
           <Tuner />
         </div>
 
-        {/* 정확도 차트 카드 */}
-        <div
-          onClick={() => navigate('/accuracy')}
-          className="cursor-pointer p-6 rounded-2xl border border-gray-200 bg-white shadow-md transition-transform duration-300 ease-in-out transform hover:scale-[1.015] hover:shadow-lg"
-        >
-          <AccuracyChart />
-        </div>
 
         {/* 🎚 마이크 감도 카드 */}
         <div className="p-6 rounded-2xl border border-gray-200 bg-white shadow-md transition-transform duration-300 ease-in-out transform hover:scale-[1.015] hover:shadow-lg">
