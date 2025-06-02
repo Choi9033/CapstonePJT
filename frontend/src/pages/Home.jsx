@@ -10,6 +10,8 @@ import RoutineCard from './RoutineCard';
 import { updateDoc } from 'firebase/firestore';
 import ProgressCard from './ProgressCard';
 import { useMicSensitivity } from '../contexts/MicSensitivityContext';
+import PracticeTrackPlayer from './PracticeTrackPlayer';
+
 
 const Home = () => {
   const [userName, setUserName] = useState('');
@@ -147,6 +149,11 @@ const Home = () => {
           <p className="text-sm text-gray-500 mt-2 text-right">
             감도: {(sensitivity * 100).toFixed(0)}%
           </p>
+        </div>
+        
+        {/* MR 연주 카드 */}
+        <div className="p-6 rounded-2xl border border-gray-200 bg-white shadow-md transition-transform duration-300 ease-in-out transform hover:scale-[1.015] hover:shadow-lg">
+          <PracticeTrackPlayer />
         </div>
       </div>
     </main>
