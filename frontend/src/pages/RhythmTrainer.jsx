@@ -9,6 +9,7 @@ import {
   BarElement,
   Tooltip,
 } from "chart.js";
+import { useMicSensitivity } from "../contexts/MicSensitivityContext";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip);
 
@@ -30,8 +31,8 @@ const RhythmTrainer = () => {
   const [chunks, setChunks] = useState([]);
   const [timingErrors, setTimingErrors] = useState([]);
   const [userId, setUserId] = useState(null);
+  const { sensitivity } = useMicSensitivity();
 
-  // 로그인 사용자 감지
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUserId(user ? user.uid : null);
@@ -39,91 +40,90 @@ const RhythmTrainer = () => {
     return () => unsubscribe();
   }, []);
 
- const handleToggleRecord = async () => {
-  if (!selectedSong) {
-    alert("🎼 곡을 먼저 선택해주세요!");
-    return;
-  }
-  if (!userId) {
-    alert("🔒 로그인 후 사용 가능합니다.");
-    return;
-  }
-
-  if (!recording) {
-    // 이전 인터벌 정리
-    if (intervalId) {
-      clearInterval(intervalId);
-      setIntervalId(null);
+  const handleToggleRecord = async () => {
+    if (!selectedSong) {
+      alert("🎼 곡을 먼저 선택해주세요!");
+      return;
+    }
+    if (!userId) {
+      alert("🔒 로그인 후 사용 가능합니다.");
+      return;
     }
 
-    setRecordingTime(0);
-    setFeedback(null);
-    setScore(null);
-    setTimingErrors([]);
+    if (!recording) {
+      if (intervalId) clearInterval(intervalId);
+      setRecordingTime(0);
+      setFeedback(null);
+      setScore(null);
+      setTimingErrors([]);
 
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(stream);
-      const newChunks = [];
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const source = audioCtx.createMediaStreamSource(stream);
 
-      recorder.ondataavailable = (e) => newChunks.push(e.data);
+        const gainNode = audioCtx.createGain();
+        gainNode.gain.value = sensitivity;
 
-      recorder.onstop = async () => {
-        if (intervalId) {
-          clearInterval(intervalId);
-          setIntervalId(null);
-        }
-        setRecording(false);
-        setRecordingTime(0);
-        setLoading(true);
+        const dest = audioCtx.createMediaStreamDestination();
+        source.connect(gainNode);
+        gainNode.connect(dest);
 
-        const blob = new Blob(newChunks, { type: "audio/webm" });
-        const formData = new FormData();
-        formData.append("file", blob, "recording.webm");
-        formData.append("song", selectedSong);
-        formData.append("user_id", userId);
+        const recorder = new MediaRecorder(dest.stream);
+        const newChunks = [];
 
-        try {
-          const res = await fetch("https://fastapi-app-533493952547.us-central1.run.app/api/analyze", {
-            method: "POST",
-            body: formData,
-          });
-          const data = await res.json();
-          setFeedback(data.feedback || "피드백 없음");
-          setScore(data.score !== undefined ? data.score : "점수 없음");
-          setTimingErrors(data.timing_errors || []);
-        } catch (err) {
-          console.error("❌ 분석 요청 실패:", err);
-          setFeedback("서버 오류 또는 분석 실패");
-          setScore("점수 없음");
-        }
+        recorder.ondataavailable = (e) => newChunks.push(e.data);
 
-        setChunks([]);
-        setLoading(false);
-      };
+        recorder.onstop = async () => {
+          if (intervalId) clearInterval(intervalId);
+          setRecording(false);
+          setRecordingTime(0);
+          setLoading(true);
 
-      recorder.start();
-      const id = setInterval(() => {
-        setRecordingTime((t) => t + 1);
-      }, 1000);
-      setIntervalId(id);
-      setMediaRecorder(recorder);
-      setChunks(newChunks);
-      setRecording(true);
-    } catch (err) {
-      console.error("❌ 마이크 접근 실패:", err);
-      setFeedback("마이크 접근 실패");
+          const blob = new Blob(newChunks, { type: "audio/webm" });
+          const formData = new FormData();
+          formData.append("file", blob, "recording.webm");
+          formData.append("song", selectedSong);
+          formData.append("user_id", userId);
+
+          try {
+            const res = await fetch("https://fastapi-app-533493952547.us-central1.run.app/api/analyze", {
+              method: "POST",
+              body: formData,
+            });
+            const data = await res.json();
+            setFeedback(data.feedback || "피드백 없음");
+            setScore(data.score !== undefined ? data.score : "점수 없음");
+            setTimingErrors(data.timing_errors || []);
+          } catch (err) {
+            console.error("❌ 분석 요청 실패:", err);
+            setFeedback("서버 오류 또는 분석 실패");
+            setScore("점수 없음");
+          }
+
+          setChunks([]);
+          setLoading(false);
+        };
+
+        recorder.start();
+        const id = setInterval(() => {
+          setRecordingTime((t) => t + 1);
+        }, 1000);
+        setIntervalId(id);
+        setMediaRecorder(recorder);
+        setChunks(newChunks);
+        setRecording(true);
+      } catch (err) {
+        console.error("❌ 마이크 접근 실패:", err);
+        setFeedback("마이크 접근 실패");
+      }
+    } else {
+      if (mediaRecorder?.state === "recording") {
+        mediaRecorder.stop();
+      }
     }
-  } else {
-    // 녹음 종료 처리
-    if (mediaRecorder?.state === "recording") {
-      mediaRecorder.stop();
-    }
-  }
-};
+  };
 
-
-  // 시각화 구성
   const renderBarChart = () => {
     if (timingErrors.length === 0) return null;
 
