@@ -16,12 +16,13 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={<Layout />}>
-            <Route index element={<Home />} />
+            <Route path="home" element={<Home />} />
             <Route path="metronome" element={<Metronome />} />
             <Route path="tuner" element={<Tuner />} />
             <Route path="rhythm-trainer" element={<RhythmTrainer />} />
             <Route path="mypage" element={<MyPage />} />
           </Route>
+          <Route index element={<Login />} />
           <Route path="/login" element={<Login />} />
           <Route path="/join" element={<JoinUs />} />
         </Routes>

@@ -28,7 +28,7 @@ const Login = () => {
         { merge: true }
       );
 
-      navigate('/'); // ✅ 수정됨
+      navigate('/home'); // ✅ 수정됨
     } catch (error) {
       alert('Google 로그인 실패: ' + error.message);
     }
@@ -39,7 +39,7 @@ const Login = () => {
     e.preventDefault();
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      navigate('/'); // ✅ 수정됨
+      navigate('/home'); // ✅ 수정됨
     } catch (error) {
       alert('로그인 실패: ' + error.message);
     }
